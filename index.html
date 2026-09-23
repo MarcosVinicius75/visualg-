@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VisuAlg+ — Ambiente de Portugol</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%232dd4bf'/%3E%3Ctext x='50' y='68' font-size='54' text-anchor='middle' fill='%23102a2a' font-family='monospace' font-weight='700'%3E%3E_%3C/text%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-theme="dark">
+<div id="app">
+
+  <!-- ===================== TOPBAR ===================== -->
+  <div id="topbar">
+    <div class="brand"><span class="mark">&gt;_</span> VisuAlg+</div>
+
+    <div class="menu-item" data-menu="arquivo">
+      <button class="menu-btn">Arquivo</button>
+      <div class="menu-dropdown">
+        <div class="mi" data-cmd="novo">Novo algoritmo <kbd>Ctrl+N</kbd></div>
+        <div class="mi" data-cmd="abrir">Abrir arquivo… <kbd>Ctrl+O</kbd></div>
+        <div class="mi" data-cmd="salvar">Salvar <kbd>Ctrl+S</kbd></div>
+        <div class="mi" data-cmd="salvarcomo">Salvar como… <kbd>Ctrl+Shift+S</kbd></div>
+        <hr>
+        <div class="mi" data-cmd="fechar-aba">Fechar aba <kbd>Ctrl+W</kbd></div>
+      </div>
+    </div>
+
+    <div class="menu-item" data-menu="editar">
+      <button class="menu-btn">Editar</button>
+      <div class="menu-dropdown">
+        <div class="mi" data-cmd="desfazer">Desfazer <kbd>Ctrl+Z</kbd></div>
+        <div class="mi" data-cmd="refazer">Refazer <kbd>Ctrl+Y</kbd></div>
+        <hr>
+        <div class="mi" data-cmd="localizar">Localizar <kbd>Ctrl+F</kbd></div>
+        <div class="mi" data-cmd="substituir">Substituir <kbd>Ctrl+H</kbd></div>
+        <div class="mi" data-cmd="ir-linha">Ir para linha… <kbd>Ctrl+G</kbd></div>
+        <hr>
+        <div class="mi" data-cmd="comentar">Comentar/descomentar <kbd>Ctrl+/</kbd></div>
+        <div class="mi" data-cmd="formatar">Formatar código <kbd>Shift+Alt+F</kbd></div>
+      </div>
+    </div>
+
+    <div class="menu-item" data-menu="selecao">
+      <button class="menu-btn">Seleção</button>
+      <div class="menu-dropdown">
+        <div class="mi" data-cmd="sel-tudo">Selecionar tudo <kbd>Ctrl+A</kbd></div>
+        <div class="mi" data-cmd="sel-proxima">Selecionar próxima ocorrência <kbd>Ctrl+D</kbd></div>
+        <div class="mi" data-cmd="cursor-acima">Adicionar cursor acima <kbd>Ctrl+Alt+↑</kbd></div>
+        <div class="mi" data-cmd="cursor-abaixo">Adicionar cursor abaixo <kbd>Ctrl+Alt+↓</kbd></div>
+      </div>
+    </div>
+
+    <div class="menu-item" data-menu="executar">
+      <button class="menu-btn">Executar</button>
+      <div class="menu-dropdown">
+        <div class="mi" data-cmd="run">▶ Executar algoritmo <kbd>F9 / F5</kbd></div>
+        <div class="mi" data-cmd="step">⏭ Executar passo a passo <kbd>F8</kbd></div>
+        <div class="mi" data-cmd="stop">⏹ Parar execução <kbd>Ctrl+F2</kbd></div>
+        <div class="mi" data-cmd="toggle-bp">● Alternar breakpoint <kbd>Shift+F5</kbd></div>
+        <div class="mi" data-cmd="clear-bp">Remover todos os breakpoints</div>
+      </div>
+    </div>
+
+    <div class="menu-item" data-menu="ajuda">
+      <button class="menu-btn">Ajuda</button>
+      <div class="menu-dropdown">
+        <div class="mi" data-cmd="ajuda-contextual">Ajuda contextual <kbd>F1</kbd></div>
+        <div class="mi" data-cmd="atalhos">Lista de atalhos</div>
+        <div class="mi" data-cmd="sobre">Sobre o VisuAlg+</div>
+      </div>
+    </div>
+
+    <div class="spacer"></div>
+    <div class="project-name" id="project-name-lbl">sem projeto</div>
+  </div>
+
+  <!-- ===================== TOOLBAR ===================== -->
+  <div id="toolbar">
+    <button class="tbtn primary" id="btn-run" title="Executar (F9 / F5)"><span class="ic">▶</span> Executar</button>
+    <button class="tbtn" id="btn-step" title="Passo a passo (F8)"><span class="ic">⏭</span> Passo</button>
+    <button class="tbtn" id="btn-continue" title="Continuar (F8)" style="display:none"><span class="ic">▶</span> Continuar</button>
+    <button class="tbtn danger-txt" id="btn-stop" title="Parar (Ctrl+F2)" disabled><span class="ic">⏹</span> Parar</button>
+    <div class="sep"></div>
+    <button class="iconbtn" id="btn-toggle-explorer" title="Explorer">🗂</button>
+    <button class="iconbtn" id="btn-toggle-debug" title="Painel de depuração">🐞</button>
+    <div class="spacer"></div>
+    <button class="iconbtn" id="zoom-out" title="Diminuir zoom (Ctrl+-)">A−</button>
+    <button class="iconbtn" id="zoom-in" title="Aumentar zoom (Ctrl++)">A+</button>
+    <div class="sep"></div>
+    <button class="iconbtn" id="btn-cmdpalette" title="Paleta de comandos (Ctrl+Shift+P)">⌘</button>
+    <button class="iconbtn" id="btn-theme" title="Alternar tema claro/escuro">◐</button>
+  </div>
+
+  <!-- ===================== CORPO ===================== -->
+  <div id="body-row">
+
+    <!-- Explorer -->
+    <div id="explorer">
+      <div class="panel-title">ALGORITMOS ABERTOS</div>
+      <div id="file-list"></div>
+      <div id="explorer-newfile">+ novo algoritmo</div>
+      <div id="explorer-help">
+        <div class="panel-title">REFERÊNCIA RÁPIDA</div>
+        <div id="help-quicklist"></div>
+      </div>
+    </div>
+
+    <!-- Editor -->
+    <div id="center-col">
+      <div id="tabbar"></div>
+      <div id="editor-wrap">
+        <textarea id="editor-textarea"></textarea>
+        <div id="findpanel">
+          <div class="frow">
+            <input id="find-input" placeholder="Localizar">
+            <span class="fcount" id="find-count"></span>
+            <button class="iconbtn" id="find-prev" title="Anterior">↑</button>
+            <button class="iconbtn" id="find-next" title="Próximo">↓</button>
+            <button class="iconbtn" id="find-close" title="Fechar">✕</button>
+          </div>
+          <div class="frow" id="replace-row" style="display:none">
+            <input id="replace-input" placeholder="Substituir por">
+            <button class="tbtn" id="replace-one" style="height:24px;padding:0 8px;">1</button>
+            <button class="tbtn" id="replace-all" style="height:24px;padding:0 8px;">Tudo</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="bottom-panel">
+        <div id="bottom-tabs">
+          <div class="bt-tab active" data-pane="saida">Saída</div>
+          <div class="bt-tab err-badge" data-pane="problemas">Problemas <span class="badge" id="problem-count">0</span></div>
+          <div class="spacer"></div>
+          <button class="iconbtn" id="btn-clear-console" title="Limpar console">🗑</button>
+          <button class="iconbtn" id="btn-collapse-bottom" title="Recolher painel">▾</button>
+        </div>
+        <div id="bottom-content">
+          <div class="bt-pane active" id="pane-saida"><div id="console-out">Clique em "Executar" para ver a saída do seu algoritmo aqui.</div></div>
+          <div class="bt-pane" id="pane-problemas"><div id="problems-list"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Painel de depuração -->
+    <div id="debugpanel">
+      <div class="dp-section grow">
+        <div class="dp-head"><span>VARIÁVEIS</span></div>
+        <div class="dp-body" id="vars-body"><div class="dp-empty">Execute ou avance um passo para inspecionar variáveis.</div></div>
+      </div>
+      <div class="dp-section">
+        <div class="dp-head"><span>PILHA DE EXECUÇÃO</span></div>
+        <div class="dp-body" id="stack-body" style="max-height:110px"><div class="dp-empty">—</div></div>
+      </div>
+      <div class="dp-section">
+        <div class="dp-head"><span>BREAKPOINTS</span></div>
+        <div class="dp-body" id="bp-body" style="max-height:110px"><div class="dp-empty">Clique na régua de linhas para adicionar.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== STATUS BAR ===================== -->
+  <div id="statusbar">
+    <div class="sb-item" id="sb-status">Pronto</div>
+    <div class="spacer"></div>
+    <div class="sb-item" id="sb-pos">Linha 1, Coluna 1</div>
+    <div class="sb-item">Portugol (VisuAlg+)</div>
+    <div class="sb-item" id="sb-problems">✓ Sem erros</div>
+  </div>
+</div>
+
+<!-- ===================== OVERLAYS ===================== -->
+<div class="overlay-bg hidden" id="cmdpalette-bg">
+  <div id="cmdpalette">
+    <input id="cmdpalette-input" placeholder="Digite um comando… (ex: executar, tema, variável)">
+    <div id="cmdpalette-list"></div>
+  </div>
+</div>
+
+<div class="overlay-bg hidden" id="helpmodal-bg">
+  <div id="helpmodal">
+    <h3 id="help-title">COMANDO</h3>
+    <div class="hsyn" id="help-syntax">sintaxe</div>
+    <p id="help-desc"></p>
+    <p id="help-example"></p>
+    <div class="hclose"><button class="tbtn primary" id="help-close">Fechar (Esc)</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- CodeMirror (editor) via CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/mode/simple.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/search/searchcursor.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/comment/comment.min.js"></script>
+
+<!-- Scripts do VisuAlg+ -->
+<script src="src/portugol.js"></script>
+<script src="src/app.js"></script>
+</body>
+</html>
